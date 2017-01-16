@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:buttonStyle">@style/TodoButton</item>
+        <item name="buttonStyle">@style/TodoButton</item>
+
+    </style>
+
+    <style name="TodoButton" parent="Base.Widget.AppCompat.Button">
+        <item name="android:textSize">24sp</item>
+        <item name="android:background">@drawable/button_background</item>
+        <item name="fontPath">fonts/font.ttf</item>
+    </style>
+
+</resources>
