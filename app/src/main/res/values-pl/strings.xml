@@ -5,4 +5,16 @@
     <string name="enter_username">Podaj hasło</string>
     <string name="sign_in">Zaloguj</string>
     <string name="sign_up">Zarejestruj</string>
+    <string name="add">Dodaj</string>
+    <string name="add_todo">Dodaj zadanie</string>
+    <string name="are_you_sure">Na pewno?</string>
+    <string name="cancel">Anuluj</string>
+    <string name="done">Zrobione</string>
+    <string name="logout">Wyloguj</string>
+    <string name="logout_dialog">Wyloguj</string>
+    <string name="ok">Tak</string>
+    <string name="password_empty_error">Hasło nie może być puste!</string>
+    <string name="refresh">Odśwież</string>
+    <string name="username_too_short">Nazwa użytkownika to min. 5 znaków.</string>
+    <string name="what_to_do">Co zrobić?</string>
 </resources>

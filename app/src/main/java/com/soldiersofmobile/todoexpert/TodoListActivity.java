@@ -2,7 +2,9 @@ package com.soldiersofmobile.todoexpert;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -21,6 +23,15 @@ public class TodoListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if (sharedPreferences.getString("token", "").isEmpty()) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_todo_list);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -54,9 +65,9 @@ public class TodoListActivity extends AppCompatActivity {
             case R.id.action_logout:
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Logout");
-                builder.setMessage("Are you sure?");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                builder.setTitle(R.string.logout_dialog);
+                builder.setMessage(R.string.are_you_sure);
+                builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(
                             final DialogInterface dialog,
@@ -66,7 +77,7 @@ public class TodoListActivity extends AppCompatActivity {
                         finish();
                     }
                 });
-                builder.setNegativeButton("Cancel", null);
+                builder.setNegativeButton(R.string.cancel, null);
                 builder.setCancelable(false);
                 builder.create().show();
 
