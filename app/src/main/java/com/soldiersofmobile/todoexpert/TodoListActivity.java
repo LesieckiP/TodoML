@@ -2,33 +2,43 @@ package com.soldiersofmobile.todoexpert;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.soldiersofmobile.todoexpert.api.TodoApi;
+import com.soldiersofmobile.todoexpert.api.TodoItem;
+import com.soldiersofmobile.todoexpert.api.TodosResponse;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class TodoListActivity extends AppCompatActivity {
 
     public static final String TODO_EXTRA = "todo";
     public static final int REQUEST_CODE = 123;
+    private static final String TAG = TodoListActivity.class.getSimpleName();
+    private LoginManager loginManager;
+    private TodoApi todoApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if (sharedPreferences.getString("token", "").isEmpty()) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+        TodoApplication application = (TodoApplication) getApplication();
+        loginManager = application.getLoginManager();
+        todoApi = application.getTodoApi();
+
+        if (loginManager.hasToLogin()) {
+            goToLogin();
             return;
         }
 
@@ -40,8 +50,39 @@ public class TodoListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                addTodo();
+            }
+        });
+    }
+
+    private void goToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void loadFromServer() {
+        Call<TodosResponse> call = todoApi.getTodos(loginManager.getSessionToken());
+        call.enqueue(new Callback<TodosResponse>() {
+            @Override
+            public void onResponse(
+                    final Call<TodosResponse> call,
+                    final Response<TodosResponse> response
+            ) {
+
+                if (response.isSuccessful()) {
+                    for (TodoItem result : response.body().results) {
+                        Log.d(TAG, result.toString());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(
+                    final Call<TodosResponse> call,
+                    final Throwable t
+            ) {
+
             }
         });
     }
@@ -56,11 +97,10 @@ public class TodoListActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_add:
-                Intent intent = new Intent(this, AddTodoActivity.class);
-                intent.putExtra(TODO_EXTRA, new Todo("task", true));
-                startActivityForResult(intent, REQUEST_CODE);
+                addTodo();
                 break;
             case R.id.action_refresh:
+                loadFromServer();
                 break;
             case R.id.action_logout:
 
@@ -74,7 +114,8 @@ public class TodoListActivity extends AppCompatActivity {
                             final int which
                     ) {
 
-                        finish();
+                        loginManager.logout();
+                        goToLogin();
                     }
                 });
                 builder.setNegativeButton(R.string.cancel, null);
@@ -84,6 +125,12 @@ public class TodoListActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void addTodo() {
+        Intent intent = new Intent(this, AddTodoActivity.class);
+        //"edit"  intent.putExtra(TODO_EXTRA, new Todo("task", true));
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
     @Override

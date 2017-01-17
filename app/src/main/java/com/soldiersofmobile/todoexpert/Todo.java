@@ -1,7 +1,5 @@
 package com.soldiersofmobile.todoexpert;
 
-import java.io.Serializable;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 

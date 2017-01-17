@@ -18,13 +18,16 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.soldiersofmobile.todoexpert.api.ErrorResponse;
 import com.soldiersofmobile.todoexpert.api.TodoApi;
 import com.soldiersofmobile.todoexpert.api.UserResponse;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -35,11 +38,15 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements LoginManager.LoginCallback {
 
     @BindView(R.id.usernameEditText) EditText usernameEditText;
     @BindView(R.id.passwordEditText) EditText passwordEditText;
     @BindView(R.id.loginButton) Button loginButton;
+
+    private LoginManager loginManager;
+
+
     private Handler handler = new Handler();
 
     @Override
@@ -47,6 +54,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
+
+        loginManager = ((TodoApplication)getApplication()).getLoginManager();
     }
 
     @Override
@@ -65,6 +74,40 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loginManager.setLoginCallback(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        loginManager.setLoginCallback(null);
+    }
+
+    @Override
+    public void setLoginEnabled(boolean enabled) {
+        loginButton.setEnabled(enabled);
+    }
+
+    @Override
+    public void showErrorMessage(String message) {
+        Toast.makeText(LoginActivity.this, "Login error:" + message, Toast.LENGTH_SHORT).show();
+
+    }
+
+    @Override
+    public void loginOk() {
+        Toast.makeText(LoginActivity.this, "Login OK", Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(LoginActivity.this, TodoListActivity.class);
+        startActivity(intent);
+        finish();
+
+    }
+
     private void performLogin() {
         String username = usernameEditText.getText().toString();
         String password = passwordEditText.getText().toString();
@@ -80,34 +123,18 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (isValid) {
-            login(username, password);
+            loginManager.login(username, password);
         }
+
     }
+
+    /* no longer used */
 
     private void login(
             final String username,
             final String password
     ) {
-        HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(interceptor)
-                .build();
-
-        Gson gson = new GsonBuilder()
-                //TODO setup gson
-                .create();
-
-        final Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://parseapi.back4app.com")
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        Converter<ResponseBody, ErrorResponse> converter
-                = retrofit.responseBodyConverter(ErrorResponse.class, new Annotation[0]);
-
-        TodoApi todoApi = retrofit.create(TodoApi.class);
+        TodoApi todoApi = ((TodoApplication) getApplication()).getTodoApi();
         Call<UserResponse> login = todoApi.login(username, password);
 
         login.enqueue(new Callback<UserResponse>() {
@@ -130,7 +157,7 @@ public class LoginActivity extends AppCompatActivity {
                     finish();
                 } else {
                     Converter<ResponseBody, ErrorResponse> converter
-                            = retrofit.responseBodyConverter(ErrorResponse.class, new Annotation[0]);
+                            = ((TodoApplication) getApplication()).getConverter();
                     try {
                         ErrorResponse errorResponse = converter.convert(response.errorBody());
                         Toast.makeText(LoginActivity.this, errorResponse.getError(), Toast.LENGTH_SHORT).show();
@@ -185,6 +212,17 @@ public class LoginActivity extends AppCompatActivity {
                 interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
                 OkHttpClient client = new OkHttpClient.Builder()
                         .addInterceptor(interceptor)
+                        .addInterceptor(new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(final Chain chain) throws IOException {
+                                Request request = chain.request().newBuilder()
+                                        .addHeader("X-Parse-Application-Id", "X7HiVehVO7Zg9ufo0qCDXVPI3z0bFpUXtyq2ezYL")
+                                        .addHeader("X-Parse-REST-API-Key", "LCTpX53aBmbtIXOtFmDb9dklESKUd0q58hFbnRYc")
+                                        .build();
+
+                                return chain.proceed(request);
+                            }
+                        })
                         .build();
 
                 Gson gson = new GsonBuilder()

@@ -1,10 +1,8 @@
 package com.soldiersofmobile.todoexpert.api;
 
-import com.google.gson.annotations.SerializedName;
 
 public class UserResponse {
 
-    @SerializedName("class")
     private String objectId;
     private String sessionToken;
     private String username;

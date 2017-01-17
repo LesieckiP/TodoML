@@ -1,4 +1,4 @@
-package com.soldiersofmobile.todoexpert;
+package com.soldiersofmobile.todoexpert.api;
 
 public class ErrorResponse {
 
