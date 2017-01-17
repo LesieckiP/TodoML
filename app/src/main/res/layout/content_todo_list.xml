@@ -13,4 +13,9 @@
     tools:context="com.soldiersofmobile.todoexpert.TodoListActivity"
     tools:showIn="@layout/activity_todo_list">
 
+    <ListView
+        android:id="@+id/todos_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </RelativeLayout>

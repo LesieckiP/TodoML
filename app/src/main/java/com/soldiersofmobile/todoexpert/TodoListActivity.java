@@ -11,12 +11,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.soldiersofmobile.todoexpert.api.TodoApi;
 import com.soldiersofmobile.todoexpert.api.TodoItem;
 import com.soldiersofmobile.todoexpert.api.TodosResponse;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -26,8 +29,12 @@ public class TodoListActivity extends AppCompatActivity {
     public static final String TODO_EXTRA = "todo";
     public static final int REQUEST_CODE = 123;
     private static final String TAG = TodoListActivity.class.getSimpleName();
+    @BindView(R.id.todos_list) ListView todosList;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.fab) FloatingActionButton fab;
     private LoginManager loginManager;
     private TodoApi todoApi;
+    private TodosAdapter todosAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +50,11 @@ public class TodoListActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_todo_list);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        ButterKnife.bind(this);
         setSupportActionBar(toolbar);
+        todosAdapter = new TodosAdapter();
+        todosList.setAdapter(todosAdapter);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,6 +82,7 @@ public class TodoListActivity extends AppCompatActivity {
                     for (TodoItem result : response.body().results) {
                         Log.d(TAG, result.toString());
                     }
+                    todosAdapter.addAll(response.body().results);
                 }
             }
 
