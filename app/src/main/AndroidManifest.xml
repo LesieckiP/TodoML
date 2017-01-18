@@ -23,6 +23,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".AddTodoActivity"/>
+
+        <service android:name=".RefreshIntentService" />
     </application>
 
 </manifest>
