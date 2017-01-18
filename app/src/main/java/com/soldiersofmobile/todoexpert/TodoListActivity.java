@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.soldiersofmobile.todoexpert.api.TodoApi;
 import com.soldiersofmobile.todoexpert.api.TodoItem;
 import com.soldiersofmobile.todoexpert.api.TodosResponse;
+import com.soldiersofmobile.todoexpert.db.TodoDao;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,12 +30,15 @@ public class TodoListActivity extends AppCompatActivity {
     public static final String TODO_EXTRA = "todo";
     public static final int REQUEST_CODE = 123;
     private static final String TAG = TodoListActivity.class.getSimpleName();
+
     @BindView(R.id.todos_list) ListView todosList;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.fab) FloatingActionButton fab;
+
     private LoginManager loginManager;
     private TodoApi todoApi;
     private TodosAdapter todosAdapter;
+    private TodoDao todoDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +47,7 @@ public class TodoListActivity extends AppCompatActivity {
         TodoApplication application = (TodoApplication) getApplication();
         loginManager = application.getLoginManager();
         todoApi = application.getTodoApi();
+        todoDao = application.getTodoDao();
 
         if (loginManager.hasToLogin()) {
             goToLogin();
@@ -81,6 +86,7 @@ public class TodoListActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     for (TodoItem result : response.body().results) {
                         Log.d(TAG, result.toString());
+                        todoDao.create(result, loginManager.getUserId());
                     }
                     todosAdapter.addAll(response.body().results);
                 }

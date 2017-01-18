@@ -11,6 +11,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.soldiersofmobile.todoexpert.api.ErrorResponse;
 import com.soldiersofmobile.todoexpert.api.TodoApi;
+import com.soldiersofmobile.todoexpert.db.DbHelper;
+import com.soldiersofmobile.todoexpert.db.TodoDao;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -20,6 +22,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import timber.log.Timber;
 
 public class TodoApplication extends Application {
 
@@ -27,6 +30,7 @@ public class TodoApplication extends Application {
     private Converter<ResponseBody, ErrorResponse> converter;
     private LoginManager loginManager;
     private SharedPreferences sharedPreferences;
+    private TodoDao todoDao;
 
     @Override
     public void onCreate() {
@@ -66,6 +70,10 @@ public class TodoApplication extends Application {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         loginManager = new LoginManager(todoApi, converter, sharedPreferences);
+        Timber.plant(new Timber.DebugTree());
+
+        DbHelper dbHelper = new DbHelper(this);
+        todoDao = new TodoDao(dbHelper);
     }
 
     public TodoApi getTodoApi() {
@@ -78,6 +86,10 @@ public class TodoApplication extends Application {
 
     public LoginManager getLoginManager() {
         return loginManager;
+    }
+
+    public TodoDao getTodoDao() {
+        return todoDao;
     }
 
     public SharedPreferences getSharedPreferences() {
